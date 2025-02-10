@@ -1,6 +1,16 @@
-import { handleTelegramWebHook, fetchLatestTelegramUpdate } from "./handlers/telegram.ts";
-import { handleWhatsAppWebHook, fetchLatestWhatsAppUpdate } from "./handlers/whatsapp.ts";
-import { facebookWebhookHandler, fetchLatestFacebookUpdate } from "./handlers/facebook.ts";
+import {
+  fetchLatestTelegramUpdate,
+  handleTelegramWebHook,
+} from "./handlers/telegram.ts";
+import {
+  fetchLatestWhatsAppUpdate,
+  handleWhatsAppWebHook,
+} from "./handlers/whatsapp.ts";
+import {
+  facebookWebhookHandler,
+  fetchLatestFacebookUpdate,
+  handleFacebookRedirect,
+} from "./handlers/facebook.ts";
 
 async function handler(req: Request): Promise<Response> {
   console.log("Incoming request", req.method, req.url);
@@ -8,10 +18,12 @@ async function handler(req: Request): Promise<Response> {
   const WHATSAPP_WEBHOOK = new URLPattern({ pathname: "/api/whatsapp" });
   const TELEGRAM_WEBHOOK = new URLPattern({ pathname: "/api/telegram/*" });
   const FACEBOOK_WEBHOOK = new URLPattern({ pathname: "/api/facebook" });
-  const FACEBOOK_WEBHOOK_REDIRECT = new URLPattern({ pathname: "/api/redirect/facebook/*" });
+  const FACEBOOK_WEBHOOK_REDIRECT = new URLPattern({
+    pathname: "/api/redirect/facebook",
+  });
 
   if (FACEBOOK_WEBHOOK_REDIRECT.exec(req.url)) {
-    return new Response("OK", { status: 200 });
+    return await handleFacebookRedirect(req);
   }
 
   if (WHATSAPP_WEBHOOK.exec(req.url)) {
